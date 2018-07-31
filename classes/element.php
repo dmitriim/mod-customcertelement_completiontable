@@ -39,20 +39,26 @@ class element extends \mod_customcert\element {
      */
     const PLUGIN_NAME = 'customcertelement_completiontable';
 
+    /**
+     * Render form element.
+     * @param \mod_customcert\edit_element_form $mform
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function render_form_elements($mform) {
         // Content Of The table.
         $mform->addElement('textarea', 'content', get_string('content', self::PLUGIN_NAME), 'wrap="virtual" rows="20" cols="100"');
         $mform->setType('content', PARAM_RAW);
-        $mform->addHelpButton('content', 'completiontable', self::PLUGIN_NAME);
+        $mform->addHelpButton('content', 'content', self::PLUGIN_NAME);
         parent::render_form_elements($mform);
 
         // Date Range Setting.
-        $mform->addElement('header', 'dateranges', get_string('dateranges', PLUGIN_NAME));
-        $mform->addElement('static', 'help', '', get_string('dateranges_help', PLUGIN_NAME));
+        $mform->addElement('header', 'dateranges', get_string('dateranges', self::PLUGIN_NAME));
+        $mform->addElement('static', 'help', '', get_string('dateranges_help', self::PLUGIN_NAME));
 
         // Fallback string.
-        $mform->addElement('text', 'fallbackstring', get_string('fallbackstring', PLUGIN_NAME));
-        $mform->addHelpButton('fallbackstring', 'fallbackstring', PLUGIN_NAME);
+        $mform->addElement('text', 'fallbackstring', get_string('fallbackstring', self::PLUGIN_NAME));
+        $mform->addHelpButton('fallbackstring', 'fallbackstring', self::PLUGIN_NAME);
         $mform->setType('fallbackstring', PARAM_NOTAGS);
 
         // Date Ranges.
@@ -103,16 +109,20 @@ class element extends \mod_customcert\element {
     /**
      * A helper function to build consistent form element name.
      *
-     * @param string $name
-     * @param string $num
-     *
+     * @param string $name form element name
+     * @param string $num form element number
      * @return string
      */
     protected function build_element_name($name, $num) {
         return $name . $num;
     }
 
-
+    /**
+     * Save form data
+     * @param \stdClass $data
+     * @return string json object of form data
+     * @throws \dml_exception
+     */
     public function save_unique_data($data) {
         $arrtostore = array(
             'content' => $data->content,
@@ -120,6 +130,12 @@ class element extends \mod_customcert\element {
             'numranges' => 0,
             'dateranges' => [],
         );
+
+        // Set Max Width.
+        if ($data->width == 0) {
+            $maxwidth = $this->get_max_width();
+            $data->width = $maxwidth;
+        }
 
         for ($i = 0; $i < $data->numranges; $i++) {
             $startdate = $this->build_element_name('startdate', $i);
@@ -138,10 +154,16 @@ class element extends \mod_customcert\element {
             }
         }
 
-        return json_encode($arrtostore);;
+        return json_encode($arrtostore);
     }
 
-
+    /**
+     * render PDF File
+     * @param \pdf $pdf
+     * @param bool $preview
+     * @param \stdClass $user
+     * @throws \coding_exception
+     */
     public function render($pdf, $preview, $user) {
         $content = $this->get_decoded_data()->content;
         $htmltext = \mod_customcert\element_helper::render_html_content($this, $this->render_table($content, $user, $preview));
@@ -150,8 +172,12 @@ class element extends \mod_customcert\element {
     }
 
     /**
-     * @return string '-' if  not yet completed
-     * @return string 'date string' of completion date
+     * Completion date based on completion status of an course module
+     * @param $cmid course module id
+     * @param $user user
+     * @param $preview preview mode
+     * @return string completion date string
+     * @throws \coding_exception
      */
     private function get_completion_date($cmid, $user, $preview) {
         global $DB;
@@ -184,6 +210,14 @@ class element extends \mod_customcert\element {
         return $completiondate;
     }
 
+    /**
+     * Render completion table
+     * @param $text : content of the table
+     * @param $user : current user
+     * @param $preview : preview mode
+     * @return string
+     * @throws \coding_exception
+     */
     private function render_table($text, $user, $preview) {
         global $DB;
 
@@ -203,15 +237,16 @@ class element extends \mod_customcert\element {
 
         // Completion ID.
         preg_match_all("/\{completion:(.+?)\}/m", $text, $matches);
-
-        if (count($matches) >= 2) {
+        // The function preg_match_all return 2 dimension array.
+        if ($matches && count($matches) >= 2) {
             foreach ($matches[0] as $key => $origin) {
                 $completionid = ($matches[1][$key]);
                 $completiondate = $this->get_completion_date($completionid, $user, $preview);
                 // Evaluation Completion status.
                 if (!$preview) {
                     preg_match_all("/^\|(.+?\{completion:$completionid)\}.\|/m", $text, $completionmatch);
-                    if (count($completionmatch) >= 2) {
+                    // The function preg_match_all return 2 dimension array.
+                    if ($completionmatch && count($completionmatch) >= 2) {
                         foreach ($completionmatch[0] as $completionkey => $completionorigin) {
                             if (trim($completiondate) == '-') {
                                 $text = str_replace($completionorigin, $completionorigin . ':notcompleted:', $text);
@@ -228,7 +263,8 @@ class element extends \mod_customcert\element {
 
         // Header row.
         preg_match_all("/^\^(.+?)\^/m", $text, $matches);
-        if (count($matches) >= 2) {
+        // The function preg_match_all return 2 dimension array.
+        if ($matches && count($matches) >= 2) {
             foreach ($matches[0] as $key => $origin) {
                 $headerrow = ($matches[1][$key]);
                 $text = str_replace($origin, ':header:^'    .$headerrow  .'^', $text);
@@ -237,7 +273,8 @@ class element extends \mod_customcert\element {
 
         // Group row.
         preg_match_all("/^#(.+?)#/m", $text, $matches);
-        if (count($matches) >= 2) {
+        // The function preg_match_all return 2 dimension array.
+        if ($matches && count($matches) >= 2) {
             foreach ($matches[0] as $key => $origin) {
                 $grouprow = ($matches[1][$key]);
                 $text = str_replace($origin, ':group:#'    .$grouprow  .'#', $text);
@@ -246,7 +283,8 @@ class element extends \mod_customcert\element {
 
         // Section row.
         preg_match_all("/^\|(.+?)\|/m", $text, $matches);
-        if (count($matches) >= 2) {
+        // The function preg_match_all return 2 dimension array.
+        if ($matches && count($matches) >= 2) {
             foreach ($matches[0] as $key => $origin) {
                 $sectionlabel = ($matches[1][$key]);
                 $courseid = \mod_customcert\element_helper::get_courseid($this->get_id());
@@ -348,8 +386,8 @@ class element extends \mod_customcert\element {
      * drag and drop interface to position it.
      *
      * @return string the html
+     * @throws \coding_exception
      */
-
     public function render_html() {
         global $USER;
         $courseid = \mod_customcert\element_helper::get_courseid($this->get_id());
@@ -359,6 +397,10 @@ class element extends \mod_customcert\element {
         return \mod_customcert\element_helper::render_html_content($this, $this->render_table($text, $USER, true));
     }
 
+    /**
+     * Retrieve saved data
+     * @param \mod_customcert\edit_element_form $mform
+     */
     public function definition_after_data($mform) {
         if (!empty($this->get_data()) && !$mform->isSubmitted()) {
             // Content of the table.
@@ -397,12 +439,19 @@ class element extends \mod_customcert\element {
         return json_decode($this->get_data());
     }
 
+    /**
+     * Find the corresponding string of specified date
+     * @param $date
+     * @return string
+     * @throws \coding_exception
+     */
     protected function get_daterange_string($date) {
         $outputstring = '';
         // Check date string.
         foreach ($this->get_decoded_data()->dateranges as $key => $range) {
             if ($date >= $range->startdate && $date <= $range->enddate) {
                 $outputstring = $range->datestring;
+                break;
             }
         }
         // Fall back string.
@@ -424,7 +473,6 @@ class element extends \mod_customcert\element {
      * have changed in the course restore.
      *
      */
-
     public function after_restore($restore) {
         global $DB;
 
@@ -440,23 +488,34 @@ class element extends \mod_customcert\element {
     }
 
     /**
+     * Determine max width of the element.
+     * @return int
+     * @throws \dml_exception
+     */
+    private function get_max_width() {
+        global $DB;
+        $pageid = $this->get_pageid();
+        $page = $DB->get_record('customcert_pages', array( 'id' => $pageid));
+        // 10mm: easier to reposition the element.
+        $maxwidth = $page ? $page->width - $page->leftmargin - $page->rightmargin - 10 : 0;
+        return $maxwidth;
+    }
+
+    /**
      * Performs validation on the element values.
      *
      */
-
     public function validate_form_elements($data, $files) {
         $errors = parent::validate_form_elements($data, $files);
 
-        // Check if at least one range is set.
-        $error = get_string('error:enabled', self::PLUGIN_NAME);
-        for ($i = 0; $i < $data['numranges']; $i++) {
-            if (!empty($data[$this->build_element_name('enabled', $i)])) {
-                $error = '';
-            }
+        // Check if width is less than 0.
+        if (isset($data['width']) && ($data['width'] < 0)) {
+            $errors['width'] = get_string('error:elementwidthlessthanzero', self::PLUGIN_NAME);
         }
-
-        if (!empty($error)) {
-            $errors['help'] = $error;
+        // Check if width is greater than maximum width.
+        $maxwidth = $this->get_max_width();
+        if ($maxwidth > 0 && isset($data['width']) && ($data['width'] > $maxwidth)) {
+            $errors['width'] = get_string('error:elementwidthgreaterthanmaxwidth', self::PLUGIN_NAME, $maxwidth);
         }
 
         // Check that datestring is set for enabled dataranges.

@@ -26,7 +26,8 @@
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 $string['pluginname'] = 'Completion Table';
-$string['content'] = 'Content of the table';
+$string['content'] = 'Content';
+$string['content_help'] = 'Content of the completion table';
 $string['privacy:metadata'] = 'The Element plugin does not store any personal data.';
 $string['completionoverview'] = 'Completion Table';
 $string['completionoverview_help'] = 'Content';
@@ -35,7 +36,7 @@ $string['enddate'] = 'End Date';
 $string['datestring'] = 'Date String';
 $string['daterange'] = 'Date Range';
 $string['dateranges'] = 'Date Ranges';
-$string['dateranges_help'] = 'Specify Text for each date range';
+$string['dateranges_help'] = 'Specify text for each date range';
 $string['fallbackstring'] = 'Fall Back String';
 $string['fallbackstring_help'] = 'Default String for date range';
 $string['maxranges'] = 'Max Ranges';
@@ -44,4 +45,6 @@ $string['maxranges_desc'] = 'Max number of Date Range';
 $string['error:enabled'] = 'A Date Range is enabled. Please specify its required value.';
 $string['error:datestring'] = 'Date string is invalid';
 $string['error:date'] = 'Date value is invalid';
+$string['error:elementwidthlessthanzero'] = 'Width must be greater than 0';
+$string['error:elementwidthgreaterthanmaxwidth'] = 'Width must be less than or equal {$a}mm';
 
