@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of the customcert module for Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -41,8 +40,6 @@ class element extends \mod_customcert\element {
     const PLUGIN_NAME = 'customcertelement_completiontable';
 
     public function render_form_elements($mform) {
-
-
         // Content Of The table.
         $mform->addElement('textarea', 'content', get_string('content', self::PLUGIN_NAME), 'wrap="virtual" rows="20" cols="100"');
         $mform->setType('content', PARAM_RAW);
@@ -65,7 +62,6 @@ class element extends \mod_customcert\element {
 
         $mform->addElement('hidden', 'numranges', $maxranges);
         $mform->setType('numranges', PARAM_INT);
-
 
         for ($i = 0; $i < $maxranges; $i++) {
             $datarange = array();
@@ -284,7 +280,6 @@ class element extends \mod_customcert\element {
             }
         }
 
-
         // Transform to table.
         $patterns = array(
 
@@ -297,7 +292,6 @@ class element extends \mod_customcert\element {
             "/:visible:(.+?):completed:/m", // Visible Section.
             "/:visible:(.+?):notcompleted:/m", // Visible Section.
             "/:visible:(.+?)$/m", // Visible Section.
-
 
             "/\^:(\d+):(.+?)\^/m", // Header Content.
             "/#(.+?)#/m", // Group Content
@@ -317,7 +311,6 @@ class element extends \mod_customcert\element {
                 '<tr style="color: black; font-style: normal;">$1</tr>', // Visible, not completed.
                 '<tr style="color: black; font-style: normal;">$1</tr>', // Visible, in general.
 
-
                 '<th style="text-align: center; width: $1%;"><h3>$2</h3></th>', // Header Content
                 '<td style="word-wrap: break-word; text-align: center" colspan="3" >$1</td>', // Group Content.
                 '<td style="word-wrap: break-word; text-align: left">   $1</td>', // Section Row Content.
@@ -335,13 +328,11 @@ class element extends \mod_customcert\element {
                 '<tr style="color: grey; font-style: normal;">$1</tr>', // Visible, not completed.
                 '<tr style="color: black; font-style: normal;">$1</tr>', // Visible, in general.
 
-
                 '<th style="text-align: center; width: $1%;"><h3>$2</h3></th>', // Header Content
                 '<td style="word-wrap: break-word; text-align: center" colspan="3" >$1</td>', // Group Content.
                 '<td style="word-wrap: break-word; text-align: left">   $1</td>', // Section Row Content.
             );
         }
-
 
         $output = preg_replace($patterns, $replacements, $text);
 
@@ -369,7 +360,6 @@ class element extends \mod_customcert\element {
     }
 
     public function definition_after_data($mform) {
-
         if (!empty($this->get_data()) && !$mform->isSubmitted()) {
             // Content of the table.
             $element = $mform->getElement('content');

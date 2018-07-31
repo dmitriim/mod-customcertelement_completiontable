@@ -38,6 +38,9 @@ $string['dateranges'] = 'Date Ranges';
 $string['dateranges_help'] = 'Specify Text for each date range';
 $string['fallbackstring'] = 'Fall Back String';
 $string['fallbackstring_help'] = 'Default String for date range';
+$string['maxranges'] = 'Max Ranges';
+$string['maxranges_desc'] = 'Max number of Date Range';
+
 $string['error:enabled'] = 'A Date Range is enabled. Please specify its required value.';
 $string['error:datestring'] = 'Date string is invalid';
 $string['error:date'] = 'Date value is invalid';

@@ -25,12 +25,16 @@
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-/**
- * Max number of date ranges.
- *
- */
+$options = [];
+foreach (range(1, 365) as $number) {
+    $options[$number] = $number;
+}
 $settings->add(new admin_setting_configselect(
     'customcertelement_completiontable/maxranges',
-    get_string('maxranges', 'customcertelement_completiontable')
+    get_string('maxranges', 'customcertelement_completiontable'),
+    get_string('maxranges_desc', 'customcertelement_completiontable'),
+    1,
+    $options
 ));
+
 
